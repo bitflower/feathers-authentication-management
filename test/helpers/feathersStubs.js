@@ -1,8 +1,7 @@
-
 /* eslint consistent-return: 0, no-param-reassign: 0, no-underscore-dangle: 0,
  no-unused-vars: 0 */
 
-const sift = require('sift');
+const sift = require('sift').default;
 const debug = require('debug')('test:feathersStubs');
 
 /**
@@ -42,7 +41,12 @@ module.exports.app = function app (config) {
  *    This allows us to test DBs like Postgress which uses id as its key.
  * @returns {Object} feather' service for route /users
  */
-module.exports.users = function users (app, usersDb, nonPaginated, idProp = '_id') {
+module.exports.users = function users (
+  app,
+  usersDb,
+  nonPaginated,
+  idProp = '_id'
+) {
   if (idProp !== '_id') {
     usersDb.forEach(user => {
       user[idProp] = user._id;
@@ -52,28 +56,31 @@ module.exports.users = function users (app, usersDb, nonPaginated, idProp = '_id
   }
 
   const usersConfig = {
-    find (params) { // always use as a Promise
+    find (params) {
+      // always use as a Promise
       const data = sift(params.query || {}, usersDb);
       debug('/users find: %d %o', data.length, params);
 
-      return new Promise((resolve) => {
-        resolve(nonPaginated
-          ? data
-          : { total: data.length, data });
+      return new Promise(resolve => {
+        resolve(nonPaginated ? data : { total: data.length, data });
       });
     },
-    get (id) { // always use as a Promise
+    get (id) {
+      // always use as a Promise
       const index = usersDb.findIndex(user1 => user1[idProp] === id);
 
       if (index === -1) {
-        return Promise.reject(new Error(`users.get ${idProp}=${id} not found.`));
+        return Promise.reject(
+          new Error(`users.get ${idProp}=${id} not found.`)
+        );
       }
 
       debug('/users get: %d %o', usersDb[index], id);
 
       return Promise.resolve(usersDb[index]);
     },
-    update (id, user, params, cb) { // use with promise or  callback
+    update (id, user, params, cb) {
+      // use with promise or  callback
       debug('/users update: %s %o %o', id, user, params);
       const index = usersDb.findIndex(user1 => user1[idProp] === id);
 
@@ -85,7 +92,8 @@ module.exports.users = function users (app, usersDb, nonPaginated, idProp = '_id
 
       return cb ? cb(null, user) : Promise.resolve(user); // we're skipping before & after hooks
     },
-    patch (id, user, params, cb) { // use with promise or  callback
+    patch (id, user, params, cb) {
+      // use with promise or  callback
       debug('/users patch: %s %o %o', id, user, params);
       const index = usersDb.findIndex(user1 => user1[idProp] === id);
 
